@@ -1,4 +1,4 @@
-import { updateWebsite, createWebsite, getWebsiteById } from 'lib/queries';
+import { updateWebsite, createWebsite, getWebsiteById, getWebsiteByName } from 'lib/queries';
 import { useAuth } from 'lib/middleware';
 import { uuid, getRandomChars } from 'lib/crypto';
 import { ok, unauthorized, methodNotAllowed } from 'lib/response';
@@ -36,6 +36,21 @@ export default async (req, res) => {
       const website = await createWebsite(user_id, { website_uuid, name, domain, share_id });
 
       return ok(res, website);
+    }
+  }
+
+  //Get uuid by website name, return 401 if there is no target website, otherwise return the uuid of the first website.
+  if (req.method === 'GET') {
+    const { type, name } = req.body;
+
+    if (type === 'get_id') {
+      const website = await getWebsiteByName(name);
+
+      if (!website) {
+        return unauthorized(res);
+      }
+
+      return ok(res, website.website_uuid);
     }
   }
 
